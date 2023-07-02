@@ -5,13 +5,7 @@ use poise::serenity_prelude::{
 };
 use rand::seq::SliceRandom;
 
-const GREETINGS: &[&str] = &[
-    "なんすか",
-    "なんか用すか",
-    "はいはい、こんにちは",
-    "元気だけはあるっすね",
-    "なんかばかみたいっすね",
-];
+const GREETINGS: &[&str] = &["なんすか", "なんか用すか", "はいはい、こんにちは", "元気だけはあるっすね", "なんかばかみたいっすね", "なんかそういうデータあるんですか？" , "うそはうそであると見抜ける人でないと難しい" ,"レターパックで現金送れ"];
 
 #[derive(Debug, poise::ChoiceParameter)]
 pub enum SpaceCommandType {
