@@ -38,7 +38,7 @@ async fn main() {
     dotenv().ok();
 
     let options = poise::FrameworkOptions {
-        commands: vec![commands::register(), commands::hello(), commands::space()],
+        commands: vec![commands::register(), commands::hello(), commands::space(), commands::mori(), commands::suzuki()],
         prefix_options: poise::PrefixFrameworkOptions {
             prefix: Some("+!".into()),
             ..Default::default()

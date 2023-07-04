@@ -1,11 +1,20 @@
 use crate::{Context, Error};
 use poise::serenity_prelude::model::permissions::Permissions;
 use poise::serenity_prelude::{
-    ChannelId, ChannelType, Color, PermissionOverwrite, PermissionOverwriteType, StageInstance, User, UserId,
+    ChannelId, ChannelType, Color, PermissionOverwrite, PermissionOverwriteType, UserId,
 };
 use rand::seq::SliceRandom;
 
-const GREETINGS: &[&str] = &["なんすか", "なんか用すか", "はいはい、こんにちは", "元気だけはあるっすね", "なんかばかみたいっすね", "なんかそういうデータあるんですか？" , "うそはうそであると見抜ける人でないと難しい" ,"レターパックで現金送れ"];
+const GREETINGS: &[&str] = &[
+    "なんすか",
+    "なんか用すか",
+    "はいはい、こんにちは",
+    "元気だけはあるっすね",
+    "なんかばかみたいっすね",
+    "なんかそういうデータあるんですか？",
+    "うそはうそであると見抜ける人でないと難しい",
+    "レターパックで現金送れ",
+];
 
 #[derive(Debug, poise::ChoiceParameter)]
 pub enum SpaceCommandType {
@@ -23,6 +32,17 @@ pub async fn register(ctx: Context<'_>, #[flag] global: bool) -> Result<(), Erro
 pub async fn hello(ctx: Context<'_>) -> Result<(), Error> {
     let greeting = GREETINGS.choose(&mut rand::thread_rng()).unwrap();
     ctx.say(greeting.to_string()).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, slash_command)]
+pub async fn mori(ctx: Context<'_>) -> Result<(), Error> {
+    ctx.say("「デコイのフリします」そう言い残すと、彼は味方に背を向け走りだした。敵はいない。彼は顔を赤らめ、いそいそと味方の元へ戻るのだった。俺は大森星。").await?;
+    Ok(())
+}
+#[poise::command(prefix_command, slash_command)]
+pub async fn suzuki(ctx: Context<'_>) -> Result<(), Error> {
+    ctx.say("「やっぱ普通の方法じゃ勝てないな──」そう言うと彼はアストラルフォームに入った。ラウンドが始まると同時に現れる星。Cロングはまるで天の川のようだった。「星がないよォ！」俺は鈴木。").await?;
     Ok(())
 }
 
@@ -59,14 +79,11 @@ async fn open_space(ctx: Context<'_>) -> Result<(), Error> {
         .channels
         .into_iter()
         .for_each(|channel| match channel.1.guild() {
-            Some(guild) => {
-                if guild.name == format!("{}のスペース", ctx.author().name) {
-                    exist = true;
-                }
+            Some(guild) if guild.name == format!("{}のスペース", ctx.author().name) => {
+                exist = true;
             }
-            None => {
-                print!("NONE!")
-            }
+            Some(guild) => {}
+            None => {}
         });
 
     if exist {
@@ -85,7 +102,7 @@ async fn open_space(ctx: Context<'_>) -> Result<(), Error> {
         return Ok(());
     }
 
-    let _ = ctx
+    if let Ok(_) = ctx
         .guild_id()
         .unwrap()
         .create_channel(ctx, |c| {
@@ -94,7 +111,8 @@ async fn open_space(ctx: Context<'_>) -> Result<(), Error> {
                 .permissions(generate_pseudo_stage_moderator_permission(ctx.author().id))
                 .category(ChannelId(1124968492991524864))
         })
-        .await;
+        .await {
+    }
 
     ctx.send(|message| {
         message.embed(|embed| {
@@ -122,38 +140,36 @@ async fn close_space(ctx: Context<'_>) -> Result<(), Error> {
             Some(guild) => guild.name == format!("{}のスペース", ctx.author().name),
             None => false,
         });
-    match target {
-        Some(target) => {
-            target.1.delete(ctx).await?;
-            ctx.send(|message| {
-                message.embed(|embed| {
-                    embed.author(|author| {
-                        author.icon_url(ctx.author().face());
-                        author.name(&ctx.author().name)
-                    });
-                    embed.title("スペースを閉じたっす");
-                    embed.color(Color::BLUE);
-                    embed
-                })
+
+    if let Some(target) = target {
+        target.1.delete(ctx).await?;
+        ctx.send(|message| {
+            message.embed(|embed| {
+                embed.author(|author| {
+                    author.icon_url(ctx.author().face());
+                    author.name(&ctx.author().name)
+                });
+                embed.title("スペースを閉じたっす");
+                embed.color(Color::BLUE);
+                embed
             })
-            .await?;
-            Ok(())
-        }
-        None => {
-            ctx.send(|message| {
-                message.embed(|embed| {
-                    embed.author(|author| {
-                        author.icon_url(ctx.author().face());
-                        author.name(&ctx.author().name)
-                    });
-                    embed.title("あなたはスペース開いてないっす");
-                    embed.color(Color::RED);
-                    embed
-                })
+        })
+        .await?;
+        Ok(())
+    } else {
+        ctx.send(|message| {
+            message.embed(|embed| {
+                embed.author(|author| {
+                    author.icon_url(ctx.author().face());
+                    author.name(&ctx.author().name)
+                });
+                embed.title("あなたはスペース開いてないっす");
+                embed.color(Color::RED);
+                embed
             })
-            .await?;
-            Ok(())
-        }
+        })
+        .await?;
+        Ok(())
     }
 }
 
@@ -164,6 +180,6 @@ pub async fn space(
 ) -> Result<(), Error> {
     match sub_command {
         SpaceCommandType::Open => open_space(ctx).await,
-        SpaceCommandType::Close => close_space(ctx).await
+        SpaceCommandType::Close => close_space(ctx).await,
     }
 }
